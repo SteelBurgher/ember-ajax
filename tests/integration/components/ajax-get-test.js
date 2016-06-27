@@ -46,3 +46,25 @@ test('clicking Load Data loads data', function(assert) {
     assert.equal($('.ajax-get li:eq(2)').text(), 'Baz');
   });
 });
+
+test('a payload that evaluates falsey but is not null or undefined loads as expected', function(assert) {
+  const PAYLOAD = 0;
+
+  server.get('/foo', json(200, PAYLOAD), 300);
+
+  this.render(hbs`
+    {{#ajax-get url="/foo" as |data isLoaded|}}
+      {{#if isLoaded}}
+        <p>{{data}}</p>
+      {{else}}
+        <button {{action data}}>Load Data</button>
+      {{/if}}
+    {{/ajax-get}}
+  `);
+
+  this.$(`.ajax-get button`).click();
+
+  return wait().then(() => {
+    assert.equal(this.$('.ajax-get p').text(), '0');
+  });
+});
